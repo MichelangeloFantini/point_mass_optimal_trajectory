@@ -121,7 +121,6 @@ def compute_alpha(x0, v0, xf, vf, a_max, a_min, v_max, v_min, tf, previous_resul
             ts_1 = tf - ((vf - a4) / (2*a5*alpha))
             ts = (a4 - a1) / (2*a2*alpha)
             a3 = a0 + (a1*ts) + (alpha*a2*(ts**2)) + (a4*(ts_1 - ts))
-            # print("alpha: ", alpha, "ts: ", ts, "ts_1: ", ts_1, "a4: ", a4, "a3: ", a3)
 
         elif a4 < v_min and alpha > 0 and alpha <= 1:
             a4 = v_min

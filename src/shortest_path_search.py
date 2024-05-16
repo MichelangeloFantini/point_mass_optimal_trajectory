@@ -30,7 +30,6 @@ def dijkstra(graph, start):
 def shortest_path(graph, start, target):
     ''' Given a graph, a starting vertex, and a target vertex, compute the shortest path between the two vertices. '''
     distances, predecessors = dijkstra(graph, start)
-    
     # Backtrack from target to start to construct the shortest path
     path = []
     current_vertex = target

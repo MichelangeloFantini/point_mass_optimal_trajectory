@@ -1,3 +1,4 @@
+import sys
 from .analysis import analyze_single_trajectory, analyze_trajectories, remove_trajectory
 from .point_mass_trajectory_optimization import calculate_tf, compute_alpha
 from .shortest_path_search import shortest_path
@@ -45,25 +46,28 @@ def compute_trajectory_set(points, a_max, a_min, v_max, v_min, starting_velocity
     start_point = points[start_index]
     end_point= points[end_index]
     results = []
-    print(prediction_horizon)
     for i, v0 in enumerate(starting_velocity_list):
-        if start_index == 0:
+        if start_index == 0 and i == 0:
                 df[f'{start_index}'] = {}
-        else:
+        elif start_index !=0:
             df[f'{start_index}_{i}'] = {}
         for j, vf in enumerate(ending_velocity_list):
             x_result, y_result = compute_single_trajectory(start_point, end_point, a_max, a_min, v_max, v_min, v0, vf, analyze=False, remove_bad=False)
             params = (x_result, y_result)
             if start_index == 0 and prediction_horizon == 1:
-                df[f'{start_index}'][f'{end_index}_f'] = params
-                df[f'{end_index}_f'] = {}
+                if (not f'{end_index}_f' in df[f'{start_index}'].keys()) or (params[0][6]<df[f'{start_index}'][f'{end_index}_f'][0][6]):
+                    df[f'{start_index}'][f'{end_index}_f'] = params
+                    df[f'{end_index}_f'] = {}
             elif start_index == 0:
-                df[f'{start_index}'][f'{end_index}_{j}'] = params # create new state for every in between index
+                if (not f'{end_index}_{j}' in df[f'{start_index}'].keys()) or (params[0][6]<df[f'{start_index}'][f'{end_index}_{j}'][0][6]):
+                    df[f'{start_index}'][f'{end_index}_{j}'] = params # create new state for every in between index
             elif start_index == prediction_horizon - 1:
-                df[f'{start_index}_{i}'][f'{end_index}_f'] = params
-                df[f'{end_index}_f'] = {}
+                if (not f'{end_index}_f' in df[f'{start_index}_{i}'].keys()) or (params[0][6]<df[f'{start_index}_{i}'][f'{end_index}_f'][0][6]):
+                    df[f'{start_index}_{i}'][f'{end_index}_f'] = params
+                    df[f'{end_index}_f'] = {}
             else:
-                df[f'{start_index}_{i}'][f'{end_index}_{j}'] = params
+                if (not f'{end_index}_{j}' in df[f'{start_index}_{i}'].keys()) or (params[0][6]<df[f'{start_index}_{i}'][f'{end_index}_{j}'][0][6]):
+                    df[f'{start_index}_{i}'][f'{end_index}_{j}'] = params
             results.append((x_result, y_result))
     return results, df
 
@@ -76,9 +80,7 @@ def compute_all_trajectories(points, df, max_acc, min_acc, max_vel, min_vel, pre
         prediction_horizon = len(points)
         
     points_to_inspect = points[0:prediction_horizon]
-    print(points_to_inspect)
     for i in range(prediction_horizon):
-        print(i)
         start_point = points[i]
         start_vel = df[i]
         if i == len(points) - 1:
@@ -90,9 +92,7 @@ def compute_all_trajectories(points, df, max_acc, min_acc, max_vel, min_vel, pre
         trajectories, dict_res = compute_trajectory_set(points, max_acc, min_acc, max_vel, min_vel, start_vel, end_vel, dict_res, i, end_point, prediction_horizon)
         results.extend(trajectories)
     if prediction_horizon == len(points):
-        print('computing shortest path')
         cost, shortest = shortest_path(dict_res, '0', '0_f')
     else:
         cost, shortest = shortest_path(dict_res, '0', f'{prediction_horizon}_f')
-    # print(shortest)
     return results, dict_res, shortest

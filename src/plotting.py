@@ -86,8 +86,8 @@ def plot_multiple_trajectories_and_velocities(results):
         plt.plot(t_values, vx, label='vx of scenario {}'.format(i))
         plt.plot(t_values, vy, label='vy of scenario {}'.format(i))
         plt.title('Velocity Curve')
-        plt.xlabel('vx')
-        plt.ylabel('vy')
+        plt.xlabel('Time')
+        plt.ylabel('Velocities')
         plt.legend()
 
 
